@@ -16,7 +16,7 @@ plt.style.use('coolplot.mplstyle')
 
 df = pd.read_csv('muon_counter_data.csv')  #,header=1,nrows=4)
 
-datapoints = 30 #how many points to generate for the model (# of the x axis values) 
+datapoints = 10 #how many points to generate for the model (# of the x axis values) 
 
 beta = np.linspace(0,89,datapoints) # defining the points between 0 and 89 degrees (we don't use 90deg because of numerical overflow problems) 
 
@@ -61,23 +61,14 @@ def cos_func_squared (y,x,zenith_angle):
     
     
     # new_cos = abs(np.cos(y/2) * abs(np.cos(zenith_angle + x )))
-    new_cos = abs(np.cos(np.arcsin(np.sin(zenith_angle + x ) * np.cos(y/2))))#test
-    # output = new_cos**2 ##test
+    new_cos = abs(np.cos(np.arcsin(np.sin(zenith_angle + x ) * np.cos(y/2))))   ###test
+    # output = (new_cos**2)   ###test
+    # output = 1
     output = (a/(-r*new_cos + np.sqrt(a**2 + 2*a*r + (r*new_cos)**2)))**2
     return output
 
 
 ##########################################
-
-# def exp_func (zenith_angle):  ### for calibration with point source
-    
-#     sigma = 0.001
-    
-#     output = np.exp((-zenith_angle**2)/sigma)
-    
-#     return output
-
-#########################################
 
 
 
@@ -86,14 +77,13 @@ def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length,F0):
     
     alim = -alpha/2
     blim = alpha/2
-     
+    
     alim_2 = -phi/2
     blim_2 = phi/2
         
     f = lambda y,x: np.sin(x + np.pi/2) * np.cos(y/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y,x,zenith_angle)
-    # f = lambda y,x: np.sin(x + np.pi/2) * np.cos(y/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * exp_func (zenith_angle)  ### for calibration with point source
-     
-    result = F0*integrate.dblquad(f, alim, blim, alim_2, blim_2)[0]
+    
+    result = F0 * integrate.dblquad(f, alim, blim, alim_2, blim_2)[0]
     
     return result#, Angular_integral[0], Area_integral[0]
 
@@ -132,7 +122,7 @@ for i in range(len(beta)):
     
 scaling_factor =  width*length  # normalization factor for the detector's surface area (basically its own area seen directly from above)
 
-fig1, (ax1) = plt.subplots(1, 1, figsize = (5, 5), dpi = 300)
+fig1, (ax1) = plt.subplots(1, 1, figsize = (5, 5), dpi = 400)
 ax1.errorbar(df['angle'], df['average_cpm_coincidental']/scaling_factor,yerr=df['average_cpm_coincidental_error']/scaling_factor,xerr=0.3, fmt=".",linewidth=4, label='Experimental data')
 ax1.plot(beta,integral_table1/scaling_factor,linewidth=3,label = "fit to detector data" )
 ax1.plot(beta,integral_table2,linewidth=3,label = "chip " )
