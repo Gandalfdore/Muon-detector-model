@@ -82,7 +82,7 @@ def chassis_tilt (max_shift_ratio, array):
 
 ##############################################
 
-def cos_func_squared (y, x, zenith_angle, clear_sky = True):
+def cos_func_squared (y, x, zenith_angle, discrim_angle = 10, clear_sky = True):
     """Function to calculate the modified cosinus law of muons. Uses a transformed angle, check the documetation pdf for more info.
     
     INPUT:
@@ -90,6 +90,7 @@ def cos_func_squared (y, x, zenith_angle, clear_sky = True):
         sweep angle 2 - spehere equatorial angle
         global zenith angle
         clear_sky - whether we assume buildings around the area we are measuring or not
+        discrim_angle - angle from the horizon upward, that is to be removed from the cos law (for example due to buidings or mountain obstructing the detecter view)
         
     OUTUT: 
         the modified cosie law
@@ -97,7 +98,7 @@ def cos_func_squared (y, x, zenith_angle, clear_sky = True):
     
     a = 10 # in km  atmosphere height
     r = 6400 # in km  radius of the planet earth
-    discrim_angle = 25 # in degrees
+    # discrim_angle = 10 # in degrees
     
     if clear_sky == True:
         new_cos = abs (np.cos ( np.arcsin ( np.sin ( zenith_angle + x ) * np.cos( y/2 ) ) ) )
@@ -114,7 +115,7 @@ def cos_func_squared (y, x, zenith_angle, clear_sky = True):
 
 ##############################################
 
-def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, clear_sky = True):
+def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, discrim_angle = 10, clear_sky = True):
     """Here we define the integrand and we integrate to get the flux through the detectors for a given zenith angle.
     
     INPUT: 
@@ -124,6 +125,8 @@ def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, c
         height, width, length of the scinitllators
         F0 - is the intensity of the flux (check the documentation)
         clear_sky - whether we assume buildings around the area we are measuring or not
+        discrim_angle - angle from the horizon upward, that is to be removed from the cos law (for example due to buidings or mountain obstructing the detecter view)
+        
         
     OUTPUT:
         the resulting integral (check the documentation)
@@ -139,9 +142,9 @@ def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, c
     f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y,x,zenith_angle)
     
     if clear_sky == True:
-        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, clear_sky = True)
+        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, discrim_angle, clear_sky = True)
     else:
-        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, clear_sky = False)
+        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, discrim_angle, clear_sky = False)
     
     result = F0 * integrate.dblquad(f, alim, blim, alim_2, blim_2)[0]
     
