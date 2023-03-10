@@ -41,11 +41,13 @@ def fudger (height, width, length, fudge_distance1, fudge_distance2):
 
 def generator_func_arr (argument_array, F0, fudge_distance, height, width, length):
     """ This hunction geneerates prediction values. For Arrays!
-    INPUT: F0 - the intensity of the flux
+    INPUT: 
+        F0 - the intensity of the flux
         fudge distance - the amount of dead zone arounf the detector
         height, width, length - geometrical dimemsions of the detector
         argument_array - an array with the feature (angles in this case)
-    OUTPUT: an array of the predicted values"""
+    OUTPUT: 
+        An array of the predicted values"""
     
     height, width, length, phi, alpha = fudger(height, width, length, fudge_distance) # transforms the geometrical parameters and gives derived geometrical values
     
@@ -86,7 +88,7 @@ def cos_func_squared (y, x, zenith_angle, discrim_angle = 10, clear_sky = True):
     """Function to calculate the modified cosinus law of muons. Uses a transformed angle, check the documetation pdf for more info.
     
     INPUT:
-        swwep angle 1 - spehere zenith angle
+        sweep angle 1 - spehere zenith angle
         sweep angle 2 - spehere equatorial angle
         global zenith angle
         clear_sky - whether we assume buildings around the area we are measuring or not
@@ -98,7 +100,6 @@ def cos_func_squared (y, x, zenith_angle, discrim_angle = 10, clear_sky = True):
     
     a = 10 # in km  atmosphere height
     r = 6400 # in km  radius of the planet earth
-    # discrim_angle = 10 # in degrees
     
     if clear_sky == True:
         new_cos = abs (np.cos ( np.arcsin ( np.sin ( zenith_angle + x ) * np.cos( y/2 ) ) ) )
@@ -113,9 +114,18 @@ def cos_func_squared (y, x, zenith_angle, discrim_angle = 10, clear_sky = True):
     
     return output
 
+################################################
+
+def flat_earth_depth (y, x, h_0):
+    """This function calculates the intensity for a muon shower inside earth, taking the flat earth approximation"""
+    
+    new_cos = abs (np.cos ( np.arcsin ( np.sin (x) * np.cos( y/2 ) ) ) )
+    
+    
+
 ##############################################
 
-def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, discrim_angle = 10, clear_sky = True):
+def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, discrim_angle = 10, clear_sky = True, underground = False):
     """Here we define the integrand and we integrate to get the flux through the detectors for a given zenith angle.
     
     INPUT: 
@@ -139,12 +149,19 @@ def integral_of_the_flux (zenith_angle, alpha, phi, height, width, length, F0, d
     blim_2 = phi/2
     
     # f = lambda y,x: np.sin(x + np.pi/2) * np.cos(y/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y,x,zenith_angle)
-    f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y,x,zenith_angle)
+#     f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y,x,zenith_angle)
     
-    if clear_sky == True:
-        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, discrim_angle, clear_sky = True)
+    if underground == True:
+        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * flat_earth_depth (y, x)
+        
     else:
-        f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, discrim_angle, clear_sky = False)
+        if clear_sky == True:
+            f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, discrim_angle, clear_sky = True)
+        else:
+            f = lambda y,x: np.sin(x + np.pi/2) * (width - (height*abs(np.tan(y)))) * (length - (height*abs(np.tan(x)))) * cos_func_squared (y, x, zenith_angle, discrim_angle, clear_sky = False)
+        
+        ######################
+       
     
     result = F0 * integrate.dblquad(f, alim, blim, alim_2, blim_2)[0]
     
