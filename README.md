@@ -5,7 +5,7 @@ It can also simulate the muon flux through an arbitrary rectangular 3D body (in 
 
 ## Attention!
 
-**Check the pdf for a complete and concise model explanation (with nice images).**
+*Check the pdf for a complete and concise model explanation (with nice images).*
 
 
 ## Contents
