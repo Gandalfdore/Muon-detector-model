@@ -1,0 +1,3 @@
+angle,average_cpm_coincidental,average_cpm_coincidental_error,average_cpm_single,average_cpm_single_error,tot_coincidental,tot_single,time_elapsed[min]
+0,41.1,0.47,676.11,1.84,8627,134546,199
+90,9,0.29,568.64,1.73,2946,107473,189
